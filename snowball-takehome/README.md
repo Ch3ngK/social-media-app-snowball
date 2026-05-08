@@ -48,3 +48,11 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+
+## seed.json optimisation strategy
+1) Instead of using `ScrollView` for all posts, I used React Native's FlatList to prevent the rendering of every single post on screen at once. It will help render: 
+    - The items currently visible. 
+    - A small buffer above and below the viewport. 
+2) expo-image was used to render images which is better for caching and image performance and only renders the image block when a post has an image attached. This prevents unnecessary rendering of image blocks. 
+
