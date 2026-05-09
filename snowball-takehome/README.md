@@ -56,3 +56,13 @@ Join our community of developers creating universal apps.
     - A small buffer above and below the viewport. 
 2) expo-image was used to render images which is better for caching and image performance and only renders the image block when a post has an image attached. This prevents unnecessary rendering of image blocks. 
 
+## Devices tested 
+1) Windows 
+2) Android 
+
+## Authentication and security notes
+1) Preferred login path is device biometrics via `expo-local-authentication`, with local email/password as the fallback.
+2) Sessions are stored in `expo-secure-store`, expire after 12 hours, and corrupted or expired sessions are cleared automatically.
+3) Password logins are rate-limited locally: after 5 failed attempts, login is locked for 5 minutes.
+4) Biometric sessions are re-verified when the app restores a stored authenticated session.
+5) Authentication is intentionally local-only for the take-home assignment. No third-party OAuth providers are used.

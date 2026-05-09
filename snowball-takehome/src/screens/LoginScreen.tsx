@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -10,18 +10,54 @@ import {
 } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 
-type LoginScreenProps = {
-  onLoginSuccess: (email: string) => Promise<void>;
-};
+import {
+  DEMO_EMAIL,
+  formatLockoutTime,
+  isValidDemoCredentials,
+  normalizeEmail,
+  type AuthMethod,
+} from "@/src/lib/auth-security";
+import {
+  getAuthThrottleState,
+  getRemainingLockoutMs,
+  registerFailedPasswordAttempt,
+  resetAuthThrottleState,
+  type AuthThrottleState,
+} from "@/src/lib/secure-storage";
 
-const DEMO_EMAIL = "demo@snowball.app";
-const DEMO_PASSWORD = "password123";
+type LoginScreenProps = {
+  onLoginSuccess: (email: string, authMethod: AuthMethod) => Promise<void>;
+};
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState(DEMO_EMAIL);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [password, setPassword] = useState("");
+  const [throttleState, setThrottleState] = useState<AuthThrottleState>({
+    failedAttempts: 0,
+    lockedUntil: null,
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function hydrateThrottleState() {
+      const storedThrottleState = await getAuthThrottleState();
+
+      if (!isMounted) {
+        return;
+      }
+
+      setThrottleState(storedThrottleState);
+    }
+
+    void hydrateThrottleState();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleBiometricLogin = async () => {
     setError("");
@@ -49,7 +85,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       });
 
       if (result.success) {
-        await onLoginSuccess(DEMO_EMAIL);
+        await resetAuthThrottleState();
+        setThrottleState({
+          failedAttempts: 0,
+          lockedUntil: null,
+        });
+        await onLoginSuccess(DEMO_EMAIL, "biometric");
       } else {
         setError("Authentication failed or was cancelled.");
       }
@@ -63,22 +104,41 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const handlePasswordLogin = async () => {
     setError("");
 
-    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedEmail = normalizeEmail(email);
+    const remainingLockoutMs = getRemainingLockoutMs(throttleState);
+
+    if (remainingLockoutMs > 0) {
+      setError(`Too many failed attempts. Try again in ${formatLockoutTime(remainingLockoutMs)}.`);
+      return;
+    }
 
     if (!trimmedEmail || !password) {
       setError("Email and password are required.");
       return;
     }
 
-    if (trimmedEmail !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
-      setError("Invalid email or password.");
+    if (!isValidDemoCredentials(trimmedEmail, password)) {
+      const nextThrottleState = await registerFailedPasswordAttempt();
+      const nextRemainingLockoutMs = getRemainingLockoutMs(nextThrottleState);
+
+      setThrottleState(nextThrottleState);
+      setError(
+        nextRemainingLockoutMs > 0
+          ? `Too many failed attempts. Try again in ${formatLockoutTime(nextRemainingLockoutMs)}.`
+          : "Invalid email or password."
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      await onLoginSuccess(trimmedEmail);
+      await resetAuthThrottleState();
+      setThrottleState({
+        failedAttempts: 0,
+        lockedUntil: null,
+      });
+      await onLoginSuccess(trimmedEmail, "password");
     } catch {
       setError("Unable to save your session securely.");
     } finally {
@@ -145,10 +205,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <Text style={styles.note}>
-        Demo credentials: {DEMO_EMAIL} / {DEMO_PASSWORD}
+        Demo credentials: {DEMO_EMAIL} / password123
       </Text>
       <Text style={styles.note}>
-        Authentication is local only for this take-home assignment.
+        Sessions expire after 12 hours, and password attempts are rate-limited locally.
       </Text>
     </View>
   );
