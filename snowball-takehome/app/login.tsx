@@ -17,8 +17,8 @@ export default function LoginRoute() {
 
   return (
     <LoginScreen
-      onLoginSuccess={async (email) => {
-        await login(email);
+      onLoginSuccess={async (email, authMethod) => {
+        await login(email, authMethod);
         router.replace('/(tabs)');
       }}
     />
