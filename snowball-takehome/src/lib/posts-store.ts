@@ -1,34 +1,59 @@
-import { createContext, createElement, useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import { createContext, createElement, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
 
-import { loadSeedPosts } from '@/src/db/postsDb';
+import { createPost, getPosts } from '@/src/db/postsDb';
 import type { Post } from '@/src/types/Post';
 
 type CreatePostInput = Omit<Post, 'id'>;
 
 type PostsContextValue = {
+  isHydrated: boolean;
   posts: Post[];
-  addPost: (post: CreatePostInput) => void;
+  addPost: (post: CreatePostInput) => Promise<void>;
 };
 
 const PostsContext = createContext<PostsContextValue | null>(null);
 
 export function PostsProvider({ children }: PropsWithChildren) {
-  const [posts, setPosts] = useState<Post[]>(() => loadSeedPosts());
+  const db = useSQLiteContext();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function hydratePosts() {
+      try {
+        const storedPosts = await getPosts(db);
+
+        if (isMounted) {
+          setPosts(storedPosts);
+        }
+      } finally {
+        if (isMounted) {
+          setIsHydrated(true);
+        }
+      }
+    }
+
+    void hydratePosts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [db]);
 
   const value = useMemo(
     () => ({
+      isHydrated,
       posts,
-      addPost: (post: CreatePostInput) => {
-        setPosts((currentPosts) => [
-          {
-            ...post,
-            id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          },
-          ...currentPosts,
-        ]);
+      addPost: async (post: CreatePostInput) => {
+        const nextPost = await createPost(db, post);
+
+        setPosts((currentPosts) => [nextPost, ...currentPosts]);
       },
     }),
-    [posts]
+    [db, isHydrated, posts]
   );
 
   return createElement(PostsContext.Provider, { value }, children);

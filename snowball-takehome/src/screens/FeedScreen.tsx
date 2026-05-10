@@ -6,7 +6,7 @@ import { useAuth } from '@/src/lib/auth-store';
 import { usePosts } from '@/src/lib/posts-store';
 
 export default function FeedScreen() {
-  const { posts } = usePosts();
+  const { isHydrated, posts } = usePosts();
   const { logout, session } = useAuth();
 
   const handleLogout = async () => {
@@ -34,6 +34,13 @@ export default function FeedScreen() {
         data={posts}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <PostCard post={item} />}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>
+              {isHydrated ? 'No posts yet. Create one to get the feed started.' : 'Loading posts...'}
+            </Text>
+          </View>
+        }
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         initialNumToRender={8}
@@ -99,8 +106,20 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   content: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 32,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: '#64748B',
+    textAlign: 'center',
   },
 });
