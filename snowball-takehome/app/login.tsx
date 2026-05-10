@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { Redirect } from 'expo-router';
 
 import { useAuth } from '@/src/lib/auth-store';
 import LoginScreen from '@/src/screens/LoginScreen';
@@ -11,15 +11,13 @@ export default function LoginRoute() {
   }
 
   if (isAuthenticated) {
-    router.replace('/(tabs)');
-    return null;
+    return <Redirect href="/(tabs)" />;
   }
 
   return (
     <LoginScreen
       onLoginSuccess={async (email, authMethod) => {
         await login(email, authMethod);
-        router.replace('/(tabs)');
       }}
     />
   );
