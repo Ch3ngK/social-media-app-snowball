@@ -25,6 +25,7 @@ export default function CreatePostScreen() {
   const [description, setDescription] = useState('');
   const [imageUri, setImageUri] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const titleCount = getCharacterCount(title);
 
   const handlePickImage = async () => {
@@ -48,7 +49,7 @@ export default function CreatePostScreen() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const titleError = validatePostTitle(title);
 
     if (titleError) {
@@ -63,21 +64,29 @@ export default function CreatePostScreen() {
       return;
     }
 
-    addPost({
-      title: title.trim(),
-      author: author.trim(),
-      description: description.trim() || undefined,
-      image: imageUri || undefined,
-    });
+    setIsSubmitting(true);
 
-    setTitle('');
-    setAuthor('');
-    setDescription('');
-    setImageUri('');
-    setError('');
+    try {
+      await addPost({
+        title: title.trim(),
+        author: author.trim(),
+        description: description.trim() || undefined,
+        image: imageUri || undefined,
+      });
 
-    Alert.alert('Post created', 'Your post has been added to the feed.');
-    router.navigate('/(tabs)');
+      setTitle('');
+      setAuthor('');
+      setDescription('');
+      setImageUri('');
+      setError('');
+
+      Alert.alert('Post created', 'Your post has been added to the feed.');
+      router.navigate('/(tabs)');
+    } catch {
+      setError('We could not save your post right now. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -141,7 +150,11 @@ export default function CreatePostScreen() {
 
             <View>
               <Text style={styles.label}>Image</Text>
-              <Pressable style={styles.secondaryButton} onPress={handlePickImage}>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => void handlePickImage()}
+                disabled={isSubmitting}
+              >
                 <Text style={styles.secondaryButtonText}>
                   {imageUri ? 'Change Image' : 'Choose Image'}
                 </Text>
@@ -159,8 +172,14 @@ export default function CreatePostScreen() {
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            <Pressable style={styles.primaryButton} onPress={handleSubmit}>
-              <Text style={styles.primaryButtonText}>Create Post</Text>
+            <Pressable
+              style={[styles.primaryButton, isSubmitting && styles.primaryButtonDisabled]}
+              onPress={() => void handleSubmit()}
+              disabled={isSubmitting}
+            >
+              <Text style={styles.primaryButtonText}>
+                {isSubmitting ? 'Creating Post...' : 'Create Post'}
+              </Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -263,6 +282,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  primaryButtonDisabled: {
+    opacity: 0.7,
   },
   primaryButtonText: {
     color: '#FFFFFF',
