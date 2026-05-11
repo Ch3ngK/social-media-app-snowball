@@ -63,7 +63,6 @@ React Native + Expo take-home assignment for a simple social media app with loca
 ## Devices Tested
 
 1. Android emulator via Android Studio
-2. Web export verified locally on Windows
 
 ## Authentication and Security Notes
 
