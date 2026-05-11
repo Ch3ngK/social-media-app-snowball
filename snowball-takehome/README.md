@@ -1,8 +1,8 @@
-# Welcome to your Expo app 👋
+# Snowball Social
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+React Native + Expo take-home assignment for a simple social media app with local authentication, a seeded feed, and post creation.
 
-## Get started
+## Setup
 
 1. Install dependencies
 
@@ -10,59 +10,61 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Start the Expo dev server
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Run the app locally
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   npm run android
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+   You can also press `w` in the Expo terminal to run the web build locally.
 
-## Get a fresh project
+## Demo Login
 
-When you're ready, run:
+- Biometric login is the preferred path when supported by the device
+- Email: `demo@snowball.app`
+- Password: `password123`
 
-```bash
-npm run reset-project
-```
+## Testing
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- Run lint:
 
-## Learn more
+  ```bash
+  npx expo lint
+  ```
 
-To learn more about developing your project with Expo, look at the following resources:
+- Optional web verification:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+  ```bash
+  npx expo export --platform web
+  ```
 
-## Join the community
+- Manual checks:
+  - Log in with biometrics or the demo email/password
+  - Confirm the seeded feed loads
+  - Create a new post and verify it appears immediately in the feed
+  - Pick an image from the device and confirm it renders in the new post
 
-Join our community of developers creating universal apps.
+## Seed Data Optimization
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. `FlatList` is used instead of `ScrollView` so only visible rows and a small buffer are rendered.
+2. `expo-image` is used for better image performance and images are rendered only when a post includes one.
+3. In development mode, React Native may log `VirtualizedList: You have a large list that is slow to update` because the seeded dataset is large. This is a development performance warning rather than a functional error, and the feed was optimized with `FlatList`, memoized post cards, and stable list callbacks to reduce unnecessary re-renders.
 
+## Devices Tested
 
-## seed.json optimisation strategy
-1) Instead of using `ScrollView` for all posts, I used React Native's FlatList to prevent the rendering of every single post on screen at once. It will help render: 
-    - The items currently visible. 
-    - A small buffer above and below the viewport. 
-2) expo-image was used to render images which is better for caching and image performance and only renders the image block when a post has an image attached. This prevents unnecessary rendering of image blocks. 
+1. Android emulator via Android Studio
+2. Web export verified locally on Windows
 
-## Devices tested 
-1) Windows 
-2) Android 
+## Authentication and Security Notes
 
-## Authentication and security notes
-1) Preferred login path is device biometrics via `expo-local-authentication`, with local email/password as the fallback.
-2) Sessions are stored in `expo-secure-store`, expire after 12 hours, and corrupted or expired sessions are cleared automatically.
-3) Password logins are rate-limited locally: after 5 failed attempts, login is locked for 5 minutes.
-4) Biometric sessions are re-verified when the app restores a stored authenticated session.
-5) Authentication is intentionally local-only for the take-home assignment. No third-party OAuth providers are used.
+1. Preferred login path is device biometrics via `expo-local-authentication`, with local email/password as the fallback.
+2. Sessions are stored in `expo-secure-store`, expire after 12 hours, and corrupted or expired sessions are cleared automatically.
+3. Password logins are rate-limited locally: after 5 failed attempts, login is locked for 5 minutes.
+4. Biometric sessions are re-verified when the app restores a stored authenticated session.
+5. Authentication is intentionally local-only for the take-home assignment. No third-party OAuth providers are used.

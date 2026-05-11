@@ -1,13 +1,14 @@
+import { memo } from 'react';
 import { Image } from 'expo-image';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Post } from '@/src/types/Post';
 
-type PostCardProps = {
+export type PostCardProps = {
   post: Post;
 };
 
-export default function PostCard({ post }: PostCardProps) {
+function PostCard({ post }: PostCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -28,6 +29,10 @@ export default function PostCard({ post }: PostCardProps) {
     </View>
   );
 }
+
+export default memo(PostCard, (previousProps, nextProps) => {
+  return previousProps.post === nextProps.post;
+});
 
 const styles = StyleSheet.create({
   card: {

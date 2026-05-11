@@ -1,18 +1,27 @@
-import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { useCallback } from 'react';
+import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View, type ListRenderItem } from 'react-native';
 import { router } from 'expo-router';
 
 import PostCard from '@/src/components/PostCard';
 import { useAuth } from '@/src/lib/auth-store';
-import { usePosts } from '@/src/lib/posts-store';
+import { usePosts } from '../lib/posts-store';
+import type { Post } from '@/src/types/Post';
+
+const keyExtractor = (item: Post) => item.id;
+
+const renderItem: ListRenderItem<Post> = ({ item }) => <PostCard post={item} />;
 
 export default function FeedScreen() {
   const { isHydrated, posts } = usePosts();
   const { logout, session } = useAuth();
+  const emptyMessage = isHydrated
+    ? 'No posts yet. Create one to get the feed started.'
+    : 'Loading posts...';
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     router.replace('/login');
-  };
+  }, [logout]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,19 +41,19 @@ export default function FeedScreen() {
 
       <FlatList
         data={posts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <PostCard post={item} />}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>
-              {isHydrated ? 'No posts yet. Create one to get the feed started.' : 'Loading posts...'}
-            </Text>
+            <Text style={styles.emptyStateText}>{emptyMessage}</Text>
           </View>
         }
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         initialNumToRender={8}
         maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
         windowSize={7}
         removeClippedSubviews
       />

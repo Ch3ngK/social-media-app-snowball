@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-import { usePosts } from '@/src/lib/posts-store';
+import { usePosts } from '../lib/posts-store';
 import { MAX_TITLE_LENGTH, getCharacterCount, validatePostTitle, validateRequiredField } from '@/src/lib/validation';
 
 export default function CreatePostScreen() {
@@ -120,7 +120,7 @@ export default function CreatePostScreen() {
                 placeholder="What is this post about?"
                 placeholderTextColor="#94A3B8"
                 style={styles.input}
-                maxLength={MAX_TITLE_LENGTH * 2}
+                maxLength={MAX_TITLE_LENGTH}
               />
             </View>
 
