@@ -9,7 +9,7 @@ type CreatePostInput = Omit<Post, 'id'>;
 type PostsContextValue = {
   isHydrated: boolean;
   posts: Post[];
-  addPost: (post: CreatePostInput) => Promise<void>;
+  addPost: (post: CreatePostInput) => Promise<Post>;
 };
 
 const PostsContext = createContext<PostsContextValue | null>(null);
@@ -51,6 +51,7 @@ export function PostsProvider({ children }: PropsWithChildren) {
         const nextPost = await createPost(db, post);
 
         setPosts((currentPosts) => [nextPost, ...currentPosts]);
+        return nextPost;
       },
     }),
     [db, isHydrated, posts]

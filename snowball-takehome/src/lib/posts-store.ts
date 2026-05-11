@@ -8,7 +8,7 @@ type CreatePostInput = Omit<Post, 'id'>;
 type PostsContextValue = {
   isHydrated: boolean;
   posts: Post[];
-  addPost: (post: CreatePostInput) => Promise<void>;
+  addPost: (post: CreatePostInput) => Promise<Post>;
 };
 
 type PostsStoreModule = {

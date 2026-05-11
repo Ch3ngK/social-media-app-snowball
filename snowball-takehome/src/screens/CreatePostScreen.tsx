@@ -80,8 +80,14 @@ export default function CreatePostScreen() {
       setImageUri('');
       setError('');
 
-      Alert.alert('Post created', 'Your post has been added to the feed.');
-      router.navigate('/(tabs)');
+      Alert.alert('Post created', 'Your post has been added to the feed.', [
+        {
+          text: 'OK',
+          onPress: () => {
+            router.navigate('/(tabs)');
+          },
+        },
+      ]);
     } catch {
       setError('We could not save your post right now. Please try again.');
     } finally {

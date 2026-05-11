@@ -66,5 +66,5 @@ React Native + Expo take-home assignment for a simple social media app with loca
 1. Preferred login path is device biometrics via `expo-local-authentication`, with local email/password as the fallback.
 2. Sessions are stored in `expo-secure-store`, expire after 12 hours, and corrupted or expired sessions are cleared automatically.
 3. Password logins are rate-limited locally: after 5 failed attempts, login is locked for 5 minutes.
-4. Biometric sessions are re-verified when the app restores a stored authenticated session.
+4. After each app launch, stored biometric sessions require re-authentication before access is restored. Users can use their biometrics or PIN to re-authenticate. 
 5. Authentication is intentionally local-only for the take-home assignment. No third-party OAuth providers are used.

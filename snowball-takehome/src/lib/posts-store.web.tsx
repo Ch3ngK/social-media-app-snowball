@@ -19,7 +19,7 @@ type CreatePostInput = Omit<Post, 'id'>;
 type PostsContextValue = {
   isHydrated: boolean;
   posts: Post[];
-  addPost: (post: CreatePostInput) => Promise<void>;
+  addPost: (post: CreatePostInput) => Promise<Post>;
 };
 
 const STORAGE_KEY = 'snowball.posts';
@@ -107,6 +107,8 @@ export function PostsProvider({ children }: PropsWithChildren) {
 
           return nextPosts;
         });
+
+        return nextPost;
       },
     }),
     [isHydrated, posts]
