@@ -1,6 +1,10 @@
-# Snowball Social
+# Snowball Social ❄️
 
 React Native + Expo take-home assignment for a simple social media app with local authentication, a seeded feed, and post creation.
+
+## Database Choice
+
+- Native platforms use `expo-sqlite` for local post persistence. I chose SQLite because it fits the take-home requirement well: it is local, simple to set up in Expo, and reliable for storing a seeded feed plus newly created posts without needing a backend service.
 
 ## Setup
 
